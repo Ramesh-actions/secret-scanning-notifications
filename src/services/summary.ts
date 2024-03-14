@@ -2,6 +2,8 @@ import * as core from '@actions/core';
 import { SummaryTableRow } from '@actions/core/lib/summary';
 import { SecretScanningAlert } from '../types/common/main';
 import * as github from '@actions/github';
+import { context } from '@actions/github';
+
 
 export function addToSummary(title: string, alerts: SecretScanningAlert[]) {
   const headers = ['Alert Number', 'Secret State', 'Secret Type', 'HTML URL', 'Org Owner', 'Repo Owner'];
@@ -24,20 +26,24 @@ export function addToSummary(title: string, alerts: SecretScanningAlert[]) {
 }
 
 async function writeSummary() {
-  const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  
+  if (!GITHUB_TOKEN) {
+    core.setFailed('GITHUB_TOKEN not found in environment');
+    return;
+  }
+
+  const octokit = github.getOctokit(GITHUB_TOKEN);
   const repoOwner = github.context.repo.owner;
 
-  let orgOwner = repoOwner;
   try {
-    const orgResponse = await octokit.rest.orgs.get({ org: repoOwner });
-    orgOwner = orgResponse.data.login;
+    // Removed unused orgOwner variable and directly used repoOwner
+    await octokit.rest.orgs.get({ org: repoOwner });
   } catch (error) {
-    core.info('Repository owner is not an organization');
+    core.setFailed(`Failed to get organization: ${error.message}`);
   }
 
   const summary = core.summary
-    .addHeading('Org Owner')
-    .addText(orgOwner)
     .addHeading('Repo Owner')
     .addText(repoOwner);
 
