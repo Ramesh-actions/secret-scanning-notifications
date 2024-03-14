@@ -23,7 +23,7 @@ export function addToSummary(title: string, alerts: SecretScanningAlert[]) {
     .addBreak();
 }
 
-export async function writeSummary() {
+async function writeSummary() {
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
   const repoOwner = github.context.repo.owner;
 
@@ -40,12 +40,13 @@ export async function writeSummary() {
     .addText(orgOwner)
     .addHeading('Repo Owner')
     .addText(repoOwner);
-  
-    core.summary.write();
-    core.setOutput('summary', summary); // set the summary as an output
-  
-    core.info(`[✅] Action summary written`);
-  }
+
+  // Write the summary to the console
+  console.log(summary.toString());
+
+  // Or return the summary
+  return summary;
+}
 
 export function getSummaryMarkdown() {
   return core.summary.stringify();
