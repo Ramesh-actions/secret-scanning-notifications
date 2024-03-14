@@ -47,12 +47,10 @@ async function writeSummary() {
     }
   }
 
-  const summary = core.summary
-    .addHeading('Repo Owner');
-    // .addText(repoOwner); // Commented out as it's not a valid method on 'Summary'
+  const summary = `Repo Owner: ${repoOwner}`;
 
   // Write the summary to the console
-  console.log(summary.toString());
+  console.log(summary);
 
   // Or return the summary
   return summary;
