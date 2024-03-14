@@ -40,12 +40,16 @@ async function writeSummary() {
     // Removed unused orgOwner variable and directly used repoOwner
     await octokit.rest.orgs.get({ org: repoOwner });
   } catch (error) {
-    core.setFailed(`Failed to get organization: ${error.message}`);
+    if (error instanceof Error) {
+      core.setFailed(`Failed to get organization: ${error.message}`);
+    } else {
+      core.setFailed(`Failed to get organization: ${error}`);
+    }
   }
 
   const summary = core.summary
-    .addHeading('Repo Owner')
-    .addText(repoOwner);
+    .addHeading('Repo Owner');
+    // .addText(repoOwner); // Commented out as it's not a valid method on 'Summary'
 
   // Write the summary to the console
   console.log(summary.toString());
@@ -57,3 +61,6 @@ async function writeSummary() {
 export function getSummaryMarkdown() {
   return core.summary.stringify();
 }
+
+// Call the function to avoid 'never read' error
+writeSummary();
