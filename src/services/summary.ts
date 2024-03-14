@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import { SummaryTableRow } from '@actions/core/lib/summary';
 import { SecretScanningAlert } from '../types/common/main';
+import * as github from '@actions/github';
 
 export function addToSummary(title: string, alerts: SecretScanningAlert[]) {
   const headers = ['Alert Number', 'Secret State', 'Secret Type', 'HTML URL', 'Org Owner', 'Repo Owner'];
@@ -22,10 +23,29 @@ export function addToSummary(title: string, alerts: SecretScanningAlert[]) {
     .addBreak();
 }
 
-export function writeSummary() {
-  core.summary.write();
-  core.info(`[✅] Action summary written`);
-}
+export async function writeSummary() {
+  const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+  const repoOwner = github.context.repo.owner;
+
+  let orgOwner = repoOwner;
+  try {
+    const orgResponse = await octokit.rest.orgs.get({ org: repoOwner });
+    orgOwner = orgResponse.data.login;
+  } catch (error) {
+    core.info('Repository owner is not an organization');
+  }
+
+  const summary = core.summary
+    .addHeading('Org Owner')
+    .addText(orgOwner)
+    .addHeading('Repo Owner')
+    .addText(repoOwner);
+  
+    core.summary.write();
+    core.setOutput('summary', summary); // set the summary as an output
+  
+    core.info(`[✅] Action summary written`);
+  }
 
 export function getSummaryMarkdown() {
   return core.summary.stringify();
