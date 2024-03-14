@@ -39,7 +39,7 @@ async function writeSummary() {
 
   try {
     await octokit.rest.orgs.get({ org: repoOwner });
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(`Failed to get organization: ${error.message}`);
   }
 
