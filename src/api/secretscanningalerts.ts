@@ -8,7 +8,12 @@ export async function fetchSecretScanningAlerts(input: inputsReturned) {
   const octokit = new MyOctokit(input)
   const iterator = await octokit.paginate(options.url, options)
   res = iterator as SecretScanningAlert[]
-
+  
+  res = res.map(alert => ({
+    ...alert,
+    org_owner: input.scope === 'organisation' ? input.owner : '',
+    repo_owner: input.scope === 'repository' ? input.owner : '',
+  }))
   return res
 }
 
